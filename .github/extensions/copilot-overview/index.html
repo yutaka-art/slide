@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10172b">
+  <title>GitHub Copilot 機能概要</title>
+  <style>
+    :root{--ink:#172038;--muted:#58647b;--blue:#4557d8;--line:#dce2ed;--paper:#fff;--status-bar-color:#10172b; font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+    *{box-sizing:border-box} body{margin:0;background:#f0f3f9;color:var(--ink);line-height:1.75} button,a{font:inherit} a{color:#334bc4;overflow-wrap:anywhere} button:focus-visible,a:focus-visible{outline:3px solid #e29b1f;outline-offset:3px}
+    .topbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px clamp(18px,4vw,48px);background:#10172b;color:white;box-shadow:0 3px 14px #10172b22}
+    .brand{font-weight:750;letter-spacing:.02em}.brand small{display:block;color:#aab8d7;font-size:.7rem;letter-spacing:.14em}.controls{display:flex;gap:8px;align-items:center}.controls button{border:1px solid #687697;background:transparent;color:white;border-radius:8px;padding:7px 12px;cursor:pointer}.controls button:hover{background:#ffffff19}.controls button:disabled{opacity:.4;cursor:default}
+    .slide-nav{display:none;align-items:center;gap:8px}.counter{font-size:.8rem;white-space:nowrap;color:#c7d0e3}
+    main{max-width:1120px;margin:auto;padding:28px 20px 70px}.page{position:relative;background:var(--paper);border:1px solid var(--line);border-radius:18px;margin:0 0 22px;padding:clamp(26px,5vw,58px);box-shadow:0 12px 35px #22365d0a}
+    .eyebrow{font-size:.72rem;letter-spacing:.18em;font-weight:800;text-transform:uppercase;color:var(--blue)} h1,h2,h3,p{margin-top:0} h1{font-size:clamp(2.4rem,6vw,4.7rem);line-height:1.13;letter-spacing:-.04em;margin:20px 0} h2{font-size:clamp(1.7rem,3.8vw,2.7rem);line-height:1.25;letter-spacing:-.03em;margin:10px 0 20px} h3{font-size:1.07rem;margin-bottom:8px} p{color:var(--muted)}
+    .hero{background:#10172b;color:white;overflow:hidden;min-height:450px;display:flex;flex-direction:column;justify-content:center}.hero:after{content:"";position:absolute;width:330px;height:330px;right:-80px;top:-100px;border-radius:50%;border:65px solid #6378ff30;box-shadow:0 0 0 55px #6378ff12;pointer-events:none}.hero .eyebrow{color:#a6b6ff}.hero p{color:#c0cbe0;max-width:610px;font-size:1.1rem}.hero .tag{display:inline-block;background:#293554;color:#d4dfff;padding:6px 12px;border-radius:30px;font-size:.78rem;width:max-content}
+    .lead{font-size:1.12rem;max-width:820px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.card{background:#f6f8fc;border:1px solid #e4e9f2;border-radius:12px;padding:20px}.card p,.card ul{font-size:.93rem;margin-bottom:0}.icon{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;background:#e5e9ff;color:#4557d8;font-weight:800;margin-bottom:14px}.note{border-left:4px solid #6273e7;padding:12px 16px;background:#f0f2ff;color:#343e5c;margin-top:18px;font-size:.9rem}.source{border-top:1px solid var(--line);margin-top:24px;padding-top:12px;font-size:.76rem;color:#6b7588}.source a{margin-right:12px}
+    .flow{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;margin:25px 0}.step{flex:1 1 140px;background:#f4f6fb;border:1px solid #e0e5ef;border-radius:12px;padding:16px}.step strong{display:block;color:#4557d8;font-size:.75rem;letter-spacing:.08em}.step span{font-weight:700}
+    .prompt{background:#10172b;color:#e3e9f9;border-radius:12px;padding:20px;font-size:.94rem;white-space:pre-wrap}.sources{padding-left:1.2em}.sources li{padding:5px 0}.sources a{font-size:.85rem}.footer-note{font-size:.83rem;color:#6b7588}
+    body.slides{background:#e8edf6} body.slides main{max-width:1400px;padding:18px 20px 20px} body.slides .page{display:none;min-height:calc(100vh - 106px);margin:0} body.slides .page.active{display:block} body.slides .hero.active{display:flex} body.slides .slide-nav{display:flex}
+    @media(max-width:700px){.topbar{align-items:flex-start}.brand small{display:none}.controls{flex-wrap:wrap;justify-content:flex-end}.grid,.grid.two{grid-template-columns:1fr}.page{padding:26px 22px}.hero{min-height:360px}.hero:after{opacity:.4}.slide-nav{order:2}.counter{min-width:42px;text-align:center}body.slides .page{min-height:calc(100vh - 120px)}}
+    @media print{.topbar{display:none}body{background:white}main{padding:0;max-width:none}.page,body.slides .page{display:block!important;box-shadow:none;border:0;break-after:page;min-height:0}body.slides .hero.active{display:block}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><small>DEVELOPER PRODUCTIVITY</small>GitHub Copilot 機能概要</div>
+    <div class="controls">
+      <div class="slide-nav" aria-label="スライド操作">
+        <button id="prev" type="button" aria-label="前のスライド">←</button>
+        <span class="counter" id="counter" aria-live="polite"></span>
+        <button id="next" type="button" aria-label="次のスライド">→</button>
+      </div>
+      <button id="mode" type="button" aria-pressed="false">スライド表示</button>
+    </div>
+  </header>
+  <main>
+    <section class="page hero" aria-labelledby="title">
+      <div class="eyebrow">A practical overview</div>
+      <h1 id="title">GitHub Copilot<br>機能概要</h1>
+      <p>コードを書く、その先へ。開発の各場面で活用できる AI アシスタントを、機能と使い方から理解する。</p>
+      <span class="tag">公式ドキュメントに基づく概要 ・ 2026年11月確認</span>
+    </section>
+    <section class="page">
+      <div class="eyebrow">01 / Overview</div><h2>Copilot とは</h2>
+      <p class="lead">ソフトウェアの作成・理解・提供を支援する AI アシスタント。日々の作業への提案から、複数ステップのタスク支援まで、開発者と協働します。</p>
+      <div class="grid">
+        <div class="card"><span class="icon">01</span><h3>書く</h3><p>入力中のコード候補や自然言語による依頼で、実装を支援。</p></div>
+        <div class="card"><span class="icon">02</span><h3>理解する</h3><p>コードやリポジトリについて質問し、説明や改善案を得る。</p></div>
+        <div class="card"><span class="icon">03</span><h3>届ける</h3><p>変更の計画・実装やレビューを支援し、開発フローに組み込む。</p></div>
+      </div>
+      <div class="source">出典：<a href="https://docs.github.com/en/copilot/get-started/about-github-copilot">GitHub Docs — About GitHub Copilot</a><a href="https://learn.microsoft.com/en-us/training/modules/introduction-to-github-copilot/">Microsoft Learn — Introduction to GitHub Copilot</a></div>
+    </section>
+    <section class="page">
+      <div class="eyebrow">02 / Daily assistance</div><h2>日常の開発を支える</h2>
+      <div class="grid two">
+        <div class="card"><span class="icon">⌘</span><h3>コード補完</h3><p>エディターで入力中に候補を表示。内容を確認して採用・編集・破棄できます。</p></div>
+        <div class="card"><span class="icon">✦</span><h3>Copilot Chat</h3><p>コードの説明、実装案の比較、リファクタリングやテストの相談を自然言語で行えます。</p></div>
+      </div>
+      <div class="note">例：「この関数の役割を説明して」「境界値を含むテストケースを提案して」</div>
+      <div class="source">出典：<a href="https://docs.github.com/en/copilot/concepts/copilot-surfaces/copilot-in-ides">GitHub Docs — Copilot in IDEs</a><a href="https://learn.microsoft.com/en-us/training/modules/introduction-to-github-copilot/">Microsoft Learn — Introduction to GitHub Copilot</a></div>
+    </section>
+    <section class="page">
+      <div class="eyebrow">03 / Agentic workflows</div><h2>タスクをエージェントに委ねる</h2>
+      <p class="lead">目的や制約を伝えると、Copilot は関連コードの調査、計画、ファイル変更、コマンド実行などを複数ステップで進められます。</p>
+      <div class="flow"><div class="step"><strong>01 / REQUEST</strong><span>目的・条件を伝える</span></div><div class="step"><strong>02 / EXPLORE</strong><span>コードを調査</span></div><div class="step"><strong>03 / IMPLEMENT</strong><span>変更・検証</span></div><div class="step"><strong>04 / REVIEW</strong><span>人が確認・判断</span></div></div>
+      <div class="note">IDE で対話しながら進める方法や、GitHub 上で作業を委ねる方法があります。機能は利用環境や設定により異なります。</div>
+      <div class="source">出典：<a href="https://docs.github.com/en/copilot/concepts/copilot-surfaces/copilot-in-ides">GitHub Docs — Copilot in IDEs</a><a href="https://docs.github.com/en/copilot/concepts/copilot-surfaces/copilot-on-github">GitHub Docs — Copilot on GitHub.com</a></div>
+    </section>
+    <section class="page">
+      <div class="eyebrow">04 / Review</div><h2>コードレビューを支援</h2>
+      <div class="grid two">
+        <div class="card"><h3>変更へのフィードバック</h3><p>プルリクエストなどのコードをレビューし、潜在的な問題や修正案を提示します。</p></div>
+        <div class="card"><h3>人によるレビューは必要</h3><p>提案の妥当性、仕様との整合性、テスト結果を確認してから適用します。レビューの代替ではありません。</p></div>
+      </div>
+      <div class="note">利用可否や自動レビューの設定は、プラン、利用クライアント、組織ポリシーなどに依存します。</div>
+      <div class="source">出典：<a href="https://docs.github.com/en/copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/code-review">GitHub Docs — Copilot code review</a><a href="https://docs.github.com/en/copilot/concepts/prompting-and-context/prompt-engineering">GitHub Docs — Prompt engineering</a></div>
+    </section>
+    <section class="page">
+      <div class="eyebrow">05 / Where to use</div><h2>いつもの開発環境で使う</h2>
+      <div class="grid">
+        <div class="card"><span class="icon">IDE</span><h3>エディター</h3><p>対応 IDE でコード補完、チャット、エージェントなどを利用。</p></div>
+        <div class="card"><span class="icon">&gt;_</span><h3>CLI</h3><p>ターミナルを起点に、対話しながら開発タスクを進める。</p></div>
+        <div class="card"><span class="icon">GH</span><h3>GitHub</h3><p>リポジトリ、Issue、プルリクエストの文脈で質問や作業を依頼。</p></div>
+      </div>
+      <div class="note">すべての機能がすべての環境で利用できるわけではありません。詳細は公式の機能比較と組織設定を確認してください。</div>
+      <div class="source">出典：<a href="https://docs.github.com/en/copilot/concepts/copilot-surfaces/copilot-in-ides">GitHub Docs — Copilot in IDEs</a><a href="https://docs.github.com/en/copilot/concepts/copilot-surfaces/copilot-on-github">GitHub Docs — Copilot on GitHub.com</a><a href="https://docs.github.com/en/copilot/reference/copilot-feature-matrix">GitHub Docs — Feature matrix</a></div>
+    </section>
+    <section class="page">
+      <div class="eyebrow">06 / Better prompts</div><h2>伝え方で、結果を改善する</h2>
+      <p>目的に加えて対象・制約・期待する結果を明確にし、必要なコンテキストを添えます。大きな依頼は小さく分け、対話しながら改善します。</p>
+      <div class="prompt">目的：既存の入力検証を改善してください。
+対象：ユーザー登録フォームのバリデーション
+条件：既存の API 仕様は変更しない
+確認：空文字と不正なメールアドレスのテストを追加</div>
+      <div class="source">出典：<a href="https://docs.github.com/en/copilot/concepts/prompting-and-context/prompt-engineering">GitHub Docs — Prompt engineering for GitHub Copilot</a></div>
+    </section>
+    <section class="page">
+      <div class="eyebrow">07 / Responsible use</div><h2>導入時に押さえること</h2>
+      <div class="grid">
+        <div class="card"><h3>検証する</h3><p>生成結果には誤りがあり得ます。コードの正しさ、セキュリティ、テストを人が確認します。</p></div>
+        <div class="card"><h3>情報を守る</h3><p>組織のポリシーとデータ取り扱いを確認し、機密情報の入力やツール利用を適切に管理します。</p></div>
+        <div class="card"><h3>利用条件を確認</h3><p>プラン、使用量、クライアント、管理者の設定によって機能や費用が異なります。</p></div>
+      </div>
+      <div class="source">出典：<a href="https://docs.github.com/en/copilot/get-started/about-github-copilot">GitHub Docs — About GitHub Copilot</a><a href="https://docs.github.com/en/copilot/get-started/plans">GitHub Docs — Plans</a><a href="https://docs.github.com/en/copilot/concepts/prompting-and-context/prompt-engineering">GitHub Docs — Prompt engineering</a></div>
+    </section>
+    <section class="page">
+      <div class="eyebrow">08 / References</div><h2>出典・参考資料</h2>
+      <p>機能や提供条件は変更されることがあります。最新情報は各公式ページをご確認ください。</p>
+      <ul class="sources">
+        <li>GitHub Docs — About GitHub Copilot<br><a href="https://docs.github.com/en/copilot/get-started/about-github-copilot">https://docs.github.com/en/copilot/get-started/about-github-copilot</a></li>
+        <li>GitHub Docs — GitHub Copilot in IDEs<br><a href="https://docs.github.com/en/copilot/concepts/copilot-surfaces/copilot-in-ides">https://docs.github.com/en/copilot/concepts/copilot-surfaces/copilot-in-ides</a></li>
+        <li>GitHub Docs — GitHub Copilot on GitHub.com<br><a href="https://docs.github.com/en/copilot/concepts/copilot-surfaces/copilot-on-github">https://docs.github.com/en/copilot/concepts/copilot-surfaces/copilot-on-github</a></li>
+        <li>GitHub Docs — Copilot code review<br><a href="https://docs.github.com/en/copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/code-review">https://docs.github.com/en/copilot/concepts/agent-capabilities/agent-powered-workflows-and-operations/code-review</a></li>
+        <li>GitHub Docs — Prompt engineering<br><a href="https://docs.github.com/en/copilot/concepts/prompting-and-context/prompt-engineering">https://docs.github.com/en/copilot/concepts/prompting-and-context/prompt-engineering</a></li>
+        <li>GitHub Docs — Plans / Feature matrix<br><a href="https://docs.github.com/en/copilot/get-started/plans">https://docs.github.com/en/copilot/get-started/plans</a><br><a href="https://docs.github.com/en/copilot/reference/copilot-feature-matrix">https://docs.github.com/en/copilot/reference/copilot-feature-matrix</a></li>
+        <li>Microsoft Learn — Introduction to GitHub Copilot<br><a href="https://learn.microsoft.com/en-us/training/modules/introduction-to-github-copilot/">https://learn.microsoft.com/en-us/training/modules/introduction-to-github-copilot/</a></li>
+      </ul>
+      <p class="footer-note">情報確認日：2026年11月21日</p>
+    </section>
+  </main>
+  <script>
+    const pages = [...document.querySelectorAll(".page")];
+    const mode = document.querySelector("#mode");
+    const prev = document.querySelector("#prev");
+    const next = document.querySelector("#next");
+    const counter = document.querySelector("#counter");
+    let current = 0;
+    function render() {
+      const slides = document.body.classList.contains("slides");
+      pages.forEach((page, index) => {
+        page.classList.toggle("active", slides && index === current);
+        page.hidden = slides && index !== current;
+      });
+      mode.textContent = slides ? "資料表示" : "スライド表示";
+      mode.setAttribute("aria-pressed", String(slides));
+      counter.textContent = `${current + 1} / ${pages.length}`;
+      prev.disabled = current === 0;
+      next.disabled = current === pages.length - 1;
+    }
+    function move(delta) {
+      current = Math.max(0, Math.min(pages.length - 1, current + delta));
+      render();
+      window.scrollTo(0, 0);
+    }
+    mode.addEventListener("click", () => {
+      document.body.classList.toggle("slides");
+      render();
+      if (!document.body.classList.contains("slides")) pages[current].scrollIntoView();
+      else window.scrollTo(0, 0);
+    });
+    prev.addEventListener("click", () => move(-1));
+    next.addEventListener("click", () => move(1));
+    document.addEventListener("keydown", (event) => {
+      if (!document.body.classList.contains("slides") || event.altKey || event.ctrlKey || event.metaKey || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
+      if (event.key === "ArrowRight") { event.preventDefault(); move(1); }
+      if (event.key === "ArrowLeft") { event.preventDefault(); move(-1); }
+      if (event.key === "Escape") mode.click();
+    });
+    render();
+  </script>
+</body>
+</html>
